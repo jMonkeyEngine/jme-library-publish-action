@@ -1,0 +1,19 @@
+on: [push]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: Build dist
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.2        
+      - name: Build
+        run: |
+          ./build.sh
+          branch="${GITHUB_REF//refs\/heads\//}"
+          git config --global user.name "Github Actions"
+          git config --global user.email "actions@users.noreply.github.com"
+          git add -f dist/
+          git commit -m "[skip ci]  build dist"
+          git pull -q --rebase
+          header=$(echo -n "ad-m:${{ secrets.GITHUB_TOKEN }}" | base64)
+          (git -c http.extraheader="AUTHORIZATION: basic $header" push origin "$branch" || true)

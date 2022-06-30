@@ -1,0 +1,31 @@
+name: 'jMonkeyEngine Library'
+description: 'Publish to jMonkeyEngine Library'
+inputs:
+  data: 
+    description: 'JSON file containing entry data'
+    required: false
+  media-data-array: 
+    description: 'JSON file containing an array of media data'
+    required: false
+  userId: 
+    description: 'Library userId'
+    required: true
+  authId: 
+    description: 'Library authId'
+    required: true
+  authKey: 
+    description: 'Library authKey'
+    required: true
+  token:
+    description: "Library token"
+    required: true
+  fetch-repo:
+    description: 'Repo to fetch. Use "current" to specify the repo that launches the action'
+    required: false
+    default: "current"
+  branch:
+    description: 'Specify the branch to fetch. Default branch if not set'
+    required: false
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
