@@ -35,7 +35,7 @@ Append this snippet to your workflow yaml to update the library on every new rel
 ```yaml
       - name: Publish to jMonkeyEngine Library
         if: github.event_name == 'release'
-        uses: jMonkeyEngine/jme-library-publish-action@v1.0
+        uses: jMonkeyEngine/jme-library-publish-action@1.0
         with:
           userId: ${{ secrets.LIBRARY_USER_ID }}
           authId: ${{ secrets.LIBRARY_AUTH_ID }}
@@ -63,7 +63,7 @@ and then set the action as follows:
 ```yaml
       - name: Publish to jMonkeyEngine Library
         if: github.event_name == 'release'
-        uses: jMonkeyEngine/jme-library-publish-action@v1.0
+        uses: jMonkeyEngine/jme-library-publish-action@1.0
         with:
           userId: ${{ secrets.LIBRARY_USER_ID }}
           authId: ${{ secrets.LIBRARY_AUTH_ID }}
