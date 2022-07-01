@@ -80,4 +80,4 @@ For example, we can specify a `name` field to override the entry name on the lib
 Finally, if we can set `fetch-repo` to `nil` to disable the Github Importer entirely and use only the data from the provided `entry.json`.
 
 ## Advanced usage
-See [action.yaml](action.yaml) for a list of supported params.
+See [action.yaml](action.yml) for a list of supported params.
