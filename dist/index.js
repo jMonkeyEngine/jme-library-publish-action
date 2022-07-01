@@ -9061,16 +9061,24 @@ async function main() {
         let repo = core.getInput('fetch-repo') ? (core.getInput('fetch-repo') == "current" ? github.context.repo : core.getInput('fetch-repo')) : undefined;
         if(repo=="nil"||repo=="null"||repo=="undefined") repo=undefined;
         
-        let branch = core.getInput('branch') ? core.getInput('branch') : github.context.branch;
+        let ref = undefined;
+        if(core.getInput('ref'))ref=core.getInput('ref');
+        else {
+            if(github.context.ref){
+                const refpath=github.context.ref;
+                ref=refpath.substring(refpath.lastIndexOf("/")+1);
+            }            
+            if(!ref)ref=github.context.branch;
+        } 
+        console.info("Publish ref",ref);
 
-        
         if (repo) {
             // import entry data
             const importedEntry = await apiCall("ext-import/github/entry", {
                 repo: `${repo.owner}/${repo.repo}`,
                 userId: userId,
                 token: token,
-                branch: branch
+                ref: ref
             });
             for (const [key, value] of Object.entries(importedEntry)) {
                 if (!data[key]) data[key] = value;
@@ -9087,7 +9095,7 @@ async function main() {
                             userId: userId,
                             token: token,
                             mediaId: mediaId,
-                            branch: branch
+                            ref: ref
                         });
                         importedMedia.push(mediaData);
                     } catch (e) {
