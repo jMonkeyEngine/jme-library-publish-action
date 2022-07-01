@@ -1,6 +1,7 @@
 on: [push]
 jobs:
   publish:
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     name: Build dist
     steps:
