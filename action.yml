@@ -23,8 +23,8 @@ inputs:
     description: 'Repo to fetch. Use "current" to specify the repo that launches the action'
     required: false
     default: "current"
-  branch:
-    description: 'Specify the branch to fetch. Default branch if not set'
+  ref:
+    description: 'Specify the ref to fetch. Default: default branch or current tag'
     required: false
 runs:
   using: 'node16'
