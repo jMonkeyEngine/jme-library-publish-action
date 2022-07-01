@@ -13,7 +13,7 @@ jobs:
           git config --global user.name "Github Actions"
           git config --global user.email "actions@users.noreply.github.com"
           git add -f dist/
-          git commit -m "[skip ci]  build dist"
+          git commit -m "[skip ci]  build dist" || true
           git pull -q --rebase
           header=$(echo -n "ad-m:${{ secrets.GITHUB_TOKEN }}" | base64)
-          (git -c http.extraheader="AUTHORIZATION: basic $header" push origin "$branch" || true)
+          (git -c http.extraheader="AUTHORIZATION: basic $header" push origin "$branch" || true) 
