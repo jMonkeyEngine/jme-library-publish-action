@@ -88,6 +88,7 @@ async function main() {
                             mediaId: mediaId,
                             ref: ref
                         });
+                        mediaData.mediaId=mediaId;
                         importedMedia.push(mediaData);
                     } catch (e) {
                         break;
