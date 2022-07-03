@@ -32,6 +32,7 @@ async function main() {
         }
 
         const media = [];
+        let lastMediaId = 0;
         if (core.getInput('media-data-array')) {
             const inputMediaR = JSON.parse(await Fs.readFile(core.getInput('media-data-array')));
             for (const inputMedia of inputMediaR) {
@@ -40,6 +41,8 @@ async function main() {
                     if (v.value) newMedia[k] = v.value;
                     else newMedia[k] = v;
                 }
+                newMedia.mediaId=lastMediaId;
+                lastMediaId++;
                 media.push(newMedia);
             }
         }
@@ -88,13 +91,14 @@ async function main() {
                             mediaId: mediaId,
                             ref: ref
                         });
-                        mediaData.mediaId=mediaId;
+                        mediaData.mediaId=lastMediaId;
+                        lastMediaId++;
                         importedMedia.push(mediaData);
                     } catch (e) {
                         break;
                     }
                 }
-                importedMedia.forEach(m => media.push(m));
+                importedMedia.forEach(m => {if(m) media.push(m)});
             }
 
         }
@@ -122,6 +126,7 @@ async function main() {
 
             // Update with new data
             {
+                console.info("Set entry",data.entryId);
                 data.authId = authId;
                 data.authKey = authKey;
                 data.suspended = "Updating..."; // suspend during update
@@ -131,14 +136,20 @@ async function main() {
 
         // update media
         for (const mediaData of media) {
-            mediaData.authId = authId;
-            mediaData.authKey = authKey;
-            await apiCall("media/set", mediaData);
+            console.info("Set media",mediaData.mediaId, "for entry",data.entryId);
+            try{
+                mediaData.authId = authId;
+                mediaData.authKey = authKey;
+                await apiCall("media/set", mediaData);
+            }catch(e){
+                console.error(e);
+            }
         }
 
 
         // publish entry
         {
+            console.info("Publish entry",data.entryId);
             data.suspended = undefined;
             await apiCall("entry/set", data);
         }
