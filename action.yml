@@ -16,6 +16,12 @@ inputs:
   authKey: 
     description: 'Library authKey'
     required: true
+  entryId: 
+    description: 'ID of the entry (optional, by default the repo name is used)'
+    required: false
+  funding: 
+    description: 'Enable funding for this entry'
+    required: false        
   token:
     description: "Library token"
     required: true
