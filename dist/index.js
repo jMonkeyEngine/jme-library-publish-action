@@ -9112,13 +9112,24 @@ async function main() {
 
         }
 
+        let entryId = data.entryId;
+        if(core.getInput('entryId')){
+            entryId=core.getInput('entryId');
+        }
+
+        let funding = undefined;
+        if(typeof core.getInput('funding')!="undefined"){
+            funding=core.getInput('funding');
+        }
+
+
         // Publish
         {
             // Fetch old data
             try {
                 let oldData = await apiCall("entry/get", {
                     userId: userId,
-                    entryId: data.entryId,
+                    entryId: entryId,
                     authId: authId,
                     authKey: authKey
                 });
@@ -9138,6 +9149,8 @@ async function main() {
                 console.info("Set entry",data.entryId);
                 data.authId = authId;
                 data.authKey = authKey;
+                data.entryId = entryId;
+                if(typeof funding!="undefined") data.funding = funding;
                 data.suspended = "Updating..."; // suspend during update
                 await apiCall("entry/set", data);
             }
@@ -9147,6 +9160,7 @@ async function main() {
         for (const mediaData of media) {
             console.info("Set media",mediaData.mediaId, "for entry",data.entryId);
             try{
+                mediaData.entryId = entryId;
                 mediaData.authId = authId;
                 mediaData.authKey = authKey;
                 await apiCall("media/set", mediaData);
