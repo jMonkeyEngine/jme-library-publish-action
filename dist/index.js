@@ -9119,7 +9119,7 @@ async function main() {
 
         let funding = undefined;
         if(typeof core.getInput('funding')!="undefined"){
-            funding=core.getInput('funding');
+            funding=Boolean(core.getInput('funding'));
         }
 
 
