@@ -75,6 +75,7 @@ async function main() {
                 ref: ref
             });
             for (const [key, value] of Object.entries(importedEntry)) {
+                if(key=="platforms")continue; // hot fix, don't replace specified platforms
                 if (!data[key]) data[key] = value;
             }
 
@@ -113,6 +114,10 @@ async function main() {
             funding=Boolean(core.getInput('funding'));
         }
 
+        let platforms = undefined;
+        if(typeof core.getInput('platforms')!="undefined"){
+            platforms=core.getInput('platforms').split(",").map(p=>p.trim());
+        }
 
         // Publish
         {
@@ -142,6 +147,7 @@ async function main() {
                 data.authKey = authKey;
                 data.entryId = entryId;
                 if(typeof funding!="undefined") data.funding = funding;
+                if(typeof platforms!="undefined") data.platforms = platforms;
                 data.suspended = "Updating..."; // suspend during update
                 await apiCall("entry/set", data);
             }

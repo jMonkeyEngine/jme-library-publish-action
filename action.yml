@@ -22,6 +22,9 @@ inputs:
   funding: 
     description: 'Enable funding for this entry'
     required: false        
+  platforms: 
+    description: 'CSV List of supported platforms. Valid platforms are: MOBILE_ANDROID, DESKTOP_WINDOWS, DESKTOP_LINUX, DESKTOP_MACOS, VR_WINDOWS, VR_LINUX, VR_MACOS'
+    required: false    
   token:
     description: "Library token"
     required: true
