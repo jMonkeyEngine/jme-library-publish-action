@@ -9031,6 +9031,28 @@ async function apiCall(api, body) {
 
 async function main() {
     try {
+
+        let importMedia = true;
+        if (typeof core.getInput('importMedia') != "undefined") {
+            importMedia = Boolean(core.getInput('importMedia'));
+        }
+
+        
+        let funding = undefined;
+        if (typeof core.getInput('funding') != "undefined") {
+            funding = Boolean(core.getInput('funding'));
+        }
+
+        let platforms = undefined;
+        if (typeof core.getInput('platforms') != "undefined") {
+            platforms = core.getInput('platforms').split(",").map(p => p.trim());
+        }
+
+        const userId = core.getInput('userId');
+        const token = core.getInput('token');
+        const authKey = core.getInput('authKey');
+        const authId = core.getInput('authId');
+
         const data = {};
         if (core.getInput('data')) {
             const inputData = JSON.parse(await Fs.readFile(core.getInput('data')));
@@ -9040,40 +9062,20 @@ async function main() {
             }
         }
 
-        const media = [];
-        let lastMediaId = 0;
-        if (core.getInput('media-data-array')) {
-            const inputMediaR = JSON.parse(await Fs.readFile(core.getInput('media-data-array')));
-            for (const inputMedia of inputMediaR) {
-                const newMedia = {};
-                for (const [k, v] of Object.entries(inputMedia)) {
-                    if (v.value) newMedia[k] = v.value;
-                    else newMedia[k] = v;
-                }
-                newMedia.mediaId=lastMediaId;
-                lastMediaId++;
-                media.push(newMedia);
-            }
-        }
 
-        const userId = core.getInput('userId');
-        const token = core.getInput('token');
-        const authKey = core.getInput('authKey');
-        const authId = core.getInput('authId');
-        
         let repo = core.getInput('fetch-repo') ? (core.getInput('fetch-repo') == "current" ? github.context.repo : core.getInput('fetch-repo')) : undefined;
-        if(repo=="nil"||repo=="null"||repo=="undefined") repo=undefined;
-        
+        if (repo == "nil" || repo == "null" || repo == "undefined") repo = undefined;
+
         let ref = undefined;
-        if(core.getInput('ref'))ref=core.getInput('ref');
+        if (core.getInput('ref')) ref = core.getInput('ref');
         else {
-            if(github.context.ref){
-                const refpath=github.context.ref;
-                ref=refpath.substring(refpath.lastIndexOf("/")+1);
-            }            
-            if(!ref)ref=github.context.branch;
-        } 
-        console.info("Publish ref",ref);
+            if (github.context.ref) {
+                const refpath = github.context.ref;
+                ref = refpath.substring(refpath.lastIndexOf("/") + 1);
+            }
+            if (!ref) ref = github.context.branch;
+        }
+        console.info("Publish ref", ref);
 
         if (repo) {
             // import entry data
@@ -9084,46 +9086,16 @@ async function main() {
                 ref: ref
             });
             for (const [key, value] of Object.entries(importedEntry)) {
+                if (key == "platforms") continue; // hot fix, don't replace specified platforms
                 if (!data[key]) data[key] = value;
             }
-
-
-            // import media
-            const importedMedia = [];
-            {
-                for (let mediaId = 0; ; mediaId++) {
-                    try {
-                        const mediaData = await apiCall("ext-import/github/media", {
-                            repo: `${repo.owner}/${repo.repo}`,
-                            userId: userId,
-                            token: token,
-                            mediaId: mediaId,
-                            ref: ref
-                        });
-                        mediaData.mediaId=lastMediaId;
-                        lastMediaId++;
-                        importedMedia.push(mediaData);
-                    } catch (e) {
-                        break;
-                    }
-                }
-                importedMedia.forEach(m => {if(m) media.push(m)});
-            }
-
         }
 
         let entryId = data.entryId;
-        if(core.getInput('entryId')){
-            entryId=core.getInput('entryId');
+        if (core.getInput('entryId')) {
+            entryId = core.getInput('entryId');
         }
 
-        let funding = undefined;
-        if(typeof core.getInput('funding')!="undefined"){
-            funding=Boolean(core.getInput('funding'));
-        }
-
-
-        // Publish
         {
             // Fetch old data
             try {
@@ -9145,26 +9117,68 @@ async function main() {
             }
 
             // Update with new data
-            {
-                console.info("Set entry",data.entryId);
-                data.authId = authId;
-                data.authKey = authKey;
-                data.entryId = entryId;
-                if(typeof funding!="undefined") data.funding = funding;
-                data.suspended = "Updating..."; // suspend during update
-                await apiCall("entry/set", data);
+
+            console.info("Set entry", data.entryId);
+            data.authId = authId;
+            data.authKey = authKey;
+            data.entryId = entryId;
+            if (typeof funding != "undefined") data.funding = funding;
+            if (typeof platforms != "undefined") data.platforms = platforms;
+            data.suspended = "Updating..."; // suspend during update
+            await apiCall("entry/set", data);
+
+        }
+
+        
+
+        const media = [];
+
+        let lastMediaId = 0;
+        if (core.getInput('media-data-array')) {
+            const inputMediaR = JSON.parse(await Fs.readFile(core.getInput('media-data-array')));
+            for (const inputMedia of inputMediaR) {
+                const newMedia = {};
+                for (const [k, v] of Object.entries(inputMedia)) {
+                    if (v.value) newMedia[k] = v.value;
+                    else newMedia[k] = v;
+                }
+                newMedia.mediaId = lastMediaId;
+                lastMediaId++;
+                media.push(newMedia);
             }
+        }
+
+
+        if (importMedia && repo) {
+            const importedMedia = [];
+            for (let mediaId = 0; ; mediaId++) {
+                try {
+                    const mediaData = await apiCall("ext-import/github/media", {
+                        repo: `${repo.owner}/${repo.repo}`,
+                        userId: userId,
+                        token: token,
+                        mediaId: mediaId,
+                        ref: ref
+                    });
+                    mediaData.mediaId = lastMediaId;
+                    lastMediaId++;
+                    importedMedia.push(mediaData);
+                } catch (e) {
+                    break;
+                }
+            }
+            importedMedia.forEach(m => { if (m) media.push(m) });
         }
 
         // update media
         for (const mediaData of media) {
-            console.info("Set media",mediaData.mediaId, "for entry",data.entryId);
-            try{
+            console.info("Set media", mediaData.mediaId, "for entry", data.entryId);
+            try {
                 mediaData.entryId = entryId;
                 mediaData.authId = authId;
                 mediaData.authKey = authKey;
                 await apiCall("media/set", mediaData);
-            }catch(e){
+            } catch (e) {
                 console.error(e);
             }
         }
@@ -9172,7 +9186,7 @@ async function main() {
 
         // publish entry
         {
-            console.info("Publish entry",data.entryId);
+            console.info("Publish entry", data.entryId);
             data.suspended = undefined;
             await apiCall("entry/set", data);
         }
