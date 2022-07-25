@@ -25,6 +25,9 @@ inputs:
   platforms: 
     description: 'CSV List of supported platforms. Valid platforms are: MOBILE_ANDROID, DESKTOP_WINDOWS, DESKTOP_LINUX, DESKTOP_MACOS, VR_WINDOWS, VR_LINUX, VR_MACOS'
     required: false    
+  importMedia: 
+    description: 'If true, replaces entry media with the ones fetched from the github repo. (default = true)'
+    required: false    
   token:
     description: "Library token"
     required: true
